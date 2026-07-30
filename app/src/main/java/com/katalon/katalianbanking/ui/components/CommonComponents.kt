@@ -8,8 +8,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -70,15 +76,28 @@ fun KInput(
             letterSpacing = 1.5.sp
         )
         Spacer(Modifier.height(8.dp))
+        var isRevealed by remember { mutableStateOf(false) }
+        val maskText = isPassword && !isRevealed
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
             placeholder = { Text(placeholder, color = Slate500) },
             singleLine = true,
-            visualTransformation = if (isPassword) androidx.compose.ui.text.input.PasswordVisualTransformation() else androidx.compose.ui.text.input.VisualTransformation.None,
+            visualTransformation = if (maskText) androidx.compose.ui.text.input.PasswordVisualTransformation() else androidx.compose.ui.text.input.VisualTransformation.None,
             keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
                 keyboardType = if (isNumber) androidx.compose.ui.text.input.KeyboardType.Number else androidx.compose.ui.text.input.KeyboardType.Text
             ),
+            trailingIcon = if (isPassword) {
+                {
+                    IconButton(onClick = { isRevealed = !isRevealed }) {
+                        Icon(
+                            imageVector = if (isRevealed) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                            contentDescription = if (isRevealed) "Hide password" else "Show password",
+                            tint = Slate500
+                        )
+                    }
+                }
+            } else null,
             isError = error != null,
             colors = OutlinedTextFieldDefaults.colors(
                 focusedContainerColor = Slate950,
