@@ -64,6 +64,17 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+
+    // Rename the generated APK(s) from the default "app-<variant>.apk" to a
+    // friendly, user-facing filename for distribution/download purposes.
+    applicationVariants.all {
+        val variant = this
+        variant.outputs
+            .map { it as com.android.build.gradle.internal.api.BaseVariantOutputImpl }
+            .forEach { output ->
+                output.outputFileName = "Katalian Banking.apk"
+            }
+    }
 }
 
 dependencies {
