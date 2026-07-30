@@ -1,5 +1,6 @@
 package com.katalon.katalianbanking.ui.screens
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
@@ -91,4 +92,4 @@ fun LoginScreen(
 
 /** Small helper to make a Text composable clickable without pulling in a full Modifier chain at call sites. */
 private fun Modifier.clickableText(onClick: () -> Unit): Modifier =
-    this.then(androidx.compose.foundation.clickable(onClick = onClick))
+    this.clickable(onClick = onClick)
