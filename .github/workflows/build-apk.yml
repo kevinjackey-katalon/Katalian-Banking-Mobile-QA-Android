@@ -47,6 +47,11 @@ jobs:
           name: katalian-banking-debug-apk
           path: ${{ steps.apk.outputs.path }}
 
+      - name: Remove stale APK asset (if present)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release delete-asset apk-latest app-debug.apk -y || true
+
       - name: Publish/update GitHub Release with APK
         uses: softprops/action-gh-release@v2
         with:
