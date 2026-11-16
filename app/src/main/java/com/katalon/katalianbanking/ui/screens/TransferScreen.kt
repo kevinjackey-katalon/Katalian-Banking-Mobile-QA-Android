@@ -11,6 +11,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.katalon.katalianbanking.data.Account
@@ -32,7 +33,7 @@ private fun AccountDropdown(label: String, options: List<Account>, selectedId: S
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(Slate950, RoundedCornerShape(16.dp))
-                    .clickable { expanded = true }
+                    .kDropdownTrigger(label.toTestTag(), "Select ${label.lowercase()}", expanded) { expanded = true }
                     .padding(16.dp),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
@@ -145,7 +146,15 @@ fun TransferScreen(user: User, onNavigateBack: () -> Unit, onTransfer: suspend (
                 }
 
                 Spacer(Modifier.height(16.dp))
-                KInput(label = "Liquid Capital Amount", value = amount, onValueChange = { amount = it }, placeholder = "0.00", isNumber = true)
+                KInput(
+                    label = "Liquid Capital Amount",
+                    value = amount,
+                    onValueChange = { amount = it },
+                    placeholder = "0.00",
+                    type = KInputType.Decimal,
+                    testTag = "transfer_amount",
+                    imeAction = ImeAction.Done
+                )
                 Spacer(Modifier.height(24.dp))
 
                 Row {
