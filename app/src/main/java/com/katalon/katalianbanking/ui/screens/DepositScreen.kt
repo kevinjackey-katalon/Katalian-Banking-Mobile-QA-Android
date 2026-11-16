@@ -12,6 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.katalon.katalianbanking.data.User
@@ -76,7 +77,7 @@ fun DepositScreen(user: User, onNavigateBack: () -> Unit, onDeposit: suspend (St
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .background(Slate950, RoundedCornerShape(16.dp))
-                                .clickable { menuOpen = true }
+                                .kDropdownTrigger("deposit_destination_account", "Select destination account", menuOpen) { menuOpen = true }
                                 .padding(16.dp)
                         ) {
                             Text(
@@ -94,7 +95,15 @@ fun DepositScreen(user: User, onNavigateBack: () -> Unit, onDeposit: suspend (St
                         }
                     }
                     Spacer(Modifier.height(16.dp))
-                    KInput(label = "Provision Amount ($)", value = amount, onValueChange = { amount = it }, placeholder = "0.00", isNumber = true)
+                    KInput(
+                        label = "Provision Amount ($)",
+                        value = amount,
+                        onValueChange = { amount = it },
+                        placeholder = "0.00",
+                        type = KInputType.Decimal,
+                        testTag = "deposit_amount",
+                        imeAction = ImeAction.Done
+                    )
                 }
                 step == 2 && method == DepositMethod.ACH -> {
                     Text("Funding Source", color = Color.White, fontWeight = FontWeight.Black, fontSize = 20.sp)

@@ -3,6 +3,7 @@ package com.katalon.katalianbanking.ui.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bolt
@@ -13,7 +14,13 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.katalon.katalianbanking.data.GeminiAssistant
@@ -103,28 +110,39 @@ fun AiAssistantWidget(allUsers: List<User>) {
                             .padding(12.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
+                        val submitQuery: () -> Unit = {
+                            if (query.isNotBlank() && !isLoading) {
+                                val q = query
+                                isLoading = true
+                                response = null
+                                scope.launch {
+                                    response = GeminiAssistant.ask(q, allUsers)
+                                    isLoading = false
+                                }
+                            }
+                        }
                         OutlinedTextField(
                             value = query,
                             onValueChange = { query = it },
                             placeholder = { Text("Search accounts or ask a question...") },
                             singleLine = true,
-                            keyboardOptions = KeyboardOptions.Default,
-                            modifier = Modifier.weight(1f)
+                            keyboardOptions = KeyboardOptions(
+                                capitalization = KeyboardCapitalization.Sentences,
+                                autoCorrect = true,
+                                keyboardType = KeyboardType.Text,
+                                imeAction = ImeAction.Search
+                            ),
+                            keyboardActions = KeyboardActions(onSearch = { submitQuery() }),
+                            modifier = Modifier
+                                .weight(1f)
+                                .testTag("ai_assistant_query")
+                                .semantics { contentDescription = "Ask AI Assistant" }
                         )
                         Spacer(Modifier.width(8.dp))
                         IconButton(
-                            onClick = {
-                                if (query.isNotBlank() && !isLoading) {
-                                    val q = query
-                                    isLoading = true
-                                    response = null
-                                    scope.launch {
-                                        response = GeminiAssistant.ask(q, allUsers)
-                                        isLoading = false
-                                    }
-                                }
-                            },
-                            enabled = query.isNotBlank() && !isLoading
+                            onClick = submitQuery,
+                            enabled = query.isNotBlank() && !isLoading,
+                            modifier = Modifier.testTag("ai_assistant_send")
                         ) {
                             Icon(Icons.Default.Send, contentDescription = "Send", tint = Cyan500)
                         }

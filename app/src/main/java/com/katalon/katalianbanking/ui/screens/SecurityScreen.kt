@@ -92,7 +92,7 @@ fun SecurityScreen(user: User, action: SecurityAction, onCancel: () -> Unit, onC
                         Box {
                             Row(
                                 modifier = Modifier.fillMaxWidth().background(Slate950, RoundedCornerShape(16.dp))
-                                    .clickable { menuOpen = true }.padding(16.dp)
+                                    .kDropdownTrigger("security_affected_account", "Select affected account", menuOpen) { menuOpen = true }.padding(16.dp)
                             ) { Text(selected?.let { "${it.type.label} (Ending ${it.accountNumber.takeLast(4)})" } ?: "Select", color = Color.White, fontSize = 13.sp) }
                             DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
                                 user.accounts.forEach { acc ->
@@ -101,7 +101,14 @@ fun SecurityScreen(user: User, action: SecurityAction, onCancel: () -> Unit, onC
                             }
                         }
                         Spacer(Modifier.height(16.dp))
-                        KInput("Incident Narrative", incidentDescription, { incidentDescription = it }, placeholder = "Briefly describe the compromise...")
+                        KInput(
+                            "Incident Narrative",
+                            incidentDescription,
+                            { incidentDescription = it },
+                            placeholder = "Briefly describe the compromise...",
+                            type = KInputType.Multiline,
+                            testTag = "security_incident_narrative"
+                        )
                         Spacer(Modifier.height(20.dp))
                         Row {
                             KButton(text = "Cancel", onClick = onCancel, variant = KButtonVariant.Secondary, modifier = Modifier.weight(1f))

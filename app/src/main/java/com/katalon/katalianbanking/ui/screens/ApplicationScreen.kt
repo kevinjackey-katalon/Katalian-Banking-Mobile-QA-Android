@@ -12,6 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.katalon.katalianbanking.data.AccountType
@@ -38,6 +39,8 @@ fun ApplicationScreen(user: User, accountType: AccountType, onCancel: () -> Unit
     var errors by remember { mutableStateOf(mapOf<String, String>()) }
     var stateMenuOpen by remember { mutableStateOf(false) }
     var fundingMenuOpen by remember { mutableStateOf(false) }
+    // Keep the amount as typed text so partial input like "250." is not lost by Double round-tripping.
+    var fundingAmountText by remember { mutableStateOf(formData.initialDeposit?.toString() ?: "") }
     val scope = rememberCoroutineScope()
 
     fun validate(currentStep: Int): Boolean {
@@ -94,21 +97,28 @@ fun ApplicationScreen(user: User, accountType: AccountType, onCancel: () -> Unit
                     Text("Identity Verification", color = Color.White, fontWeight = FontWeight.Black, fontSize = 20.sp)
                     Text("Provide your legal credentials as they appear on official documents.", color = Slate500, fontSize = 13.sp)
                     Spacer(Modifier.height(16.dp))
-                    KInput("Legal First Name", formData.firstName, { formData.firstName = it; refreshTick++ }, error = errors["firstName"])
+                    KInput("Legal First Name", formData.firstName, { formData.firstName = it; refreshTick++ }, error = errors["firstName"],
+                        type = KInputType.Name, testTag = "application_first_name")
                     Spacer(Modifier.height(12.dp))
-                    KInput("Middle Name", formData.middleName, { formData.middleName = it; refreshTick++ })
+                    KInput("Middle Name", formData.middleName, { formData.middleName = it; refreshTick++ },
+                        type = KInputType.Name, testTag = "application_middle_name")
                     Spacer(Modifier.height(12.dp))
-                    KInput("Legal Last Name", formData.lastName, { formData.lastName = it; refreshTick++ }, error = errors["lastName"])
+                    KInput("Legal Last Name", formData.lastName, { formData.lastName = it; refreshTick++ }, error = errors["lastName"],
+                        type = KInputType.Name, testTag = "application_last_name")
                     Spacer(Modifier.height(12.dp))
-                    KInput("Date of Birth (YYYY-MM-DD)", formData.dob, { formData.dob = it; refreshTick++ }, error = errors["dob"])
+                    KInput("Date of Birth (YYYY-MM-DD)", formData.dob, { formData.dob = it; refreshTick++ }, error = errors["dob"],
+                        placeholder = "YYYY-MM-DD", type = KInputType.Date, testTag = "application_dob",
+                        imeAction = ImeAction.Done)
                 }
                 step == 2 -> {
                     Text("Residence Information", color = Color.White, fontWeight = FontWeight.Black, fontSize = 20.sp)
                     Text("Your primary physical address for regulatory compliance.", color = Slate500, fontSize = 13.sp)
                     Spacer(Modifier.height(16.dp))
-                    KInput("Primary Address Line", formData.address, { formData.address = it; refreshTick++ }, error = errors["address"])
+                    KInput("Primary Address Line", formData.address, { formData.address = it; refreshTick++ }, error = errors["address"],
+                        type = KInputType.Address, testTag = "application_address")
                     Spacer(Modifier.height(12.dp))
-                    KInput("City", formData.city, { formData.city = it; refreshTick++ }, error = errors["city"])
+                    KInput("City", formData.city, { formData.city = it; refreshTick++ }, error = errors["city"],
+                        type = KInputType.Address, testTag = "application_city", imeAction = ImeAction.Done)
                     Spacer(Modifier.height(12.dp))
                     Text("STATE", color = Slate500, fontSize = 10.sp, fontWeight = FontWeight.Black)
                     Spacer(Modifier.height(8.dp))
@@ -117,7 +127,7 @@ fun ApplicationScreen(user: User, accountType: AccountType, onCancel: () -> Unit
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .background(Slate950, RoundedCornerShape(16.dp))
-                                .clickable { stateMenuOpen = true }
+                                .kDropdownTrigger("application_state", "Select state", stateMenuOpen) { stateMenuOpen = true }
                                 .padding(16.dp)
                         ) { Text(formData.state, color = Color.White, fontSize = 13.sp) }
                         DropdownMenu(expanded = stateMenuOpen, onDismissRequest = { stateMenuOpen = false }) {
@@ -127,7 +137,8 @@ fun ApplicationScreen(user: User, accountType: AccountType, onCancel: () -> Unit
                         }
                     }
                     Spacer(Modifier.height(12.dp))
-                    KInput("Zip Code", formData.zip, { formData.zip = it; refreshTick++ }, error = errors["zip"], isNumber = true)
+                    KInput("Zip Code", formData.zip, { formData.zip = it; refreshTick++ }, error = errors["zip"],
+                        type = KInputType.Digits, maxLength = 5, testTag = "application_zip", imeAction = ImeAction.Done)
                 }
                 step == 3 -> {
                     Text("Initial Asset Allocation", color = Color.White, fontWeight = FontWeight.Black, fontSize = 20.sp)
@@ -135,9 +146,12 @@ fun ApplicationScreen(user: User, accountType: AccountType, onCancel: () -> Unit
                     Spacer(Modifier.height(16.dp))
                     KInput(
                         "Funding Amount ($)",
-                        formData.initialDeposit?.toString() ?: "",
-                        { formData.initialDeposit = it.toDoubleOrNull(); refreshTick++ },
-                        isNumber = true
+                        fundingAmountText,
+                        { fundingAmountText = it; formData.initialDeposit = it.toDoubleOrNull(); refreshTick++ },
+                        placeholder = "0.00",
+                        type = KInputType.Decimal,
+                        testTag = "application_funding_amount",
+                        imeAction = ImeAction.Done
                     )
                     Spacer(Modifier.height(12.dp))
                     Text("TRANSFER FROM EXISTING ACCOUNT", color = Slate500, fontSize = 10.sp, fontWeight = FontWeight.Black)
@@ -149,7 +163,7 @@ fun ApplicationScreen(user: User, accountType: AccountType, onCancel: () -> Unit
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .background(Slate950, RoundedCornerShape(16.dp))
-                                .clickable { fundingMenuOpen = true }
+                                .kDropdownTrigger("application_funding_source", "Select funding source", fundingMenuOpen) { fundingMenuOpen = true }
                                 .padding(16.dp)
                         ) {
                             Text(selectedFunding?.let { "${it.type.label} (Ending ${it.accountNumber.takeLast(4)})" } ?: "External Wire / New Funds", color = Color.White, fontSize = 13.sp)

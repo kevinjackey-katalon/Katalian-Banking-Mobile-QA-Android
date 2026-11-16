@@ -8,7 +8,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -43,6 +47,15 @@ fun LoginScreen(
         }
     }
 
+    val focusManager = LocalFocusManager.current
+    val submit: () -> Unit = {
+        if (!loading) {
+            focusManager.clearFocus()
+            error = ""
+            loading = true
+        }
+    }
+
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
@@ -63,15 +76,33 @@ fun LoginScreen(
                     ErrorBanner(error)
                     Spacer(Modifier.height(20.dp))
                 }
-                KInput(label = "Secure ID", value = username, onValueChange = { username = it; error = "" }, placeholder = "USER_0000")
+                KInput(
+                    label = "Secure ID",
+                    value = username,
+                    onValueChange = { username = it; error = "" },
+                    placeholder = "USER_0000",
+                    type = KInputType.Username,
+                    testTag = "login_username",
+                    imeAction = ImeAction.Next
+                )
                 Spacer(Modifier.height(16.dp))
-                KInput(label = "Access Code", value = password, onValueChange = { password = it; error = "" }, placeholder = "••••••••", isPassword = true)
+                KInput(
+                    label = "Access Code",
+                    value = password,
+                    onValueChange = { password = it; error = "" },
+                    placeholder = "••••••••",
+                    type = KInputType.Password,
+                    testTag = "login_password",
+                    imeAction = ImeAction.Done,
+                    onImeAction = submit
+                )
                 Spacer(Modifier.height(24.dp))
                 KButton(
                     text = if (loading) "Authorizing..." else "Enter Vault Access",
-                    onClick = { if (!loading) { error = ""; loading = true } },
+                    onClick = submit,
                     fullWidth = true,
-                    enabled = !loading
+                    enabled = !loading,
+                    testTag = "login_submit"
                 )
                 Spacer(Modifier.height(16.dp))
                 Text(
@@ -81,7 +112,10 @@ fun LoginScreen(
                     fontWeight = FontWeight.Black,
                     letterSpacing = 1.sp,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth().clickableText { onForgotPassword() }
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag("login_forgot_password")
+                        .clickableText { onForgotPassword() }
                 )
             }
             Spacer(Modifier.height(32.dp))
@@ -92,4 +126,4 @@ fun LoginScreen(
 
 /** Small helper to make a Text composable clickable without pulling in a full Modifier chain at call sites. */
 private fun Modifier.clickableText(onClick: () -> Unit): Modifier =
-    this.clickable(onClick = onClick)
+    this.clickable(role = Role.Button, onClick = onClick)

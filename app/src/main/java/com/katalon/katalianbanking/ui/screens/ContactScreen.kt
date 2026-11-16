@@ -11,6 +11,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.katalon.katalianbanking.ui.components.*
@@ -81,9 +82,7 @@ fun ContactScreen(onReportStolen: () -> Unit, onLockdown: () -> Unit) {
             }
             Spacer(Modifier.height(8.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
-                KInput(label = "", value = input, onValueChange = { input = it }, placeholder = "Message Concierge...", modifier = Modifier.weight(1f))
-                Spacer(Modifier.width(8.dp))
-                KButton(text = "Send", onClick = {
+                val sendMessage: () -> Unit = {
                     if (input.isNotBlank()) {
                         val userMsg = input
                         messages.add(ChatMsg(false, userMsg))
@@ -99,7 +98,21 @@ fun ContactScreen(onReportStolen: () -> Unit, onLockdown: () -> Unit) {
                             messages.add(ChatMsg(true, response))
                         }
                     }
-                })
+                }
+                KInput(
+                    label = "",
+                    value = input,
+                    onValueChange = { input = it },
+                    placeholder = "Message Concierge...",
+                    modifier = Modifier.weight(1f),
+                    type = KInputType.Message,
+                    testTag = "contact_message_input",
+                    accessibilityLabel = "Message Concierge",
+                    imeAction = ImeAction.Send,
+                    onImeAction = sendMessage
+                )
+                Spacer(Modifier.width(8.dp))
+                KButton(text = "Send", onClick = sendMessage, testTag = "contact_send")
             }
         }
     }
