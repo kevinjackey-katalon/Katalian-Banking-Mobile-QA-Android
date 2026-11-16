@@ -12,6 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.katalon.katalianbanking.data.LoanApplicationData
@@ -29,6 +30,9 @@ fun LoanApplicationScreen(loanType: LoanType, onCancel: () -> Unit, onSubmit: su
     val formData = remember { LoanApplicationData(loanTerm = 12) }
     var refreshTick by remember { mutableStateOf(0) } // forces recomposition on mutable data class edits
     var termMenuOpen by remember { mutableStateOf(false) }
+    // Amounts are kept as typed text so partial input like "5000." is not lost by Double round-tripping.
+    var annualIncomeText by remember { mutableStateOf(if (formData.annualIncome == 0.0) "" else formData.annualIncome.toString()) }
+    var loanAmountText by remember { mutableStateOf(if (formData.loanAmount == 0.0) "" else formData.loanAmount.toString()) }
     val scope = rememberCoroutineScope()
 
     Column(modifier = Modifier.fillMaxSize().padding(20.dp)) {
@@ -51,31 +55,41 @@ fun LoanApplicationScreen(loanType: LoanType, onCancel: () -> Unit, onSubmit: su
                         Text("Personal Verification", color = Color.White, fontWeight = FontWeight.Black, fontSize = 20.sp)
                         Text("Verify your identity for the lending institution.", color = Slate500, fontSize = 13.sp)
                         Spacer(Modifier.height(16.dp))
-                        KInput("First Name", formData.firstName, { formData.firstName = it; refreshTick++ })
+                        KInput("First Name", formData.firstName, { formData.firstName = it; refreshTick++ },
+                            type = KInputType.Name, testTag = "loan_first_name")
                         Spacer(Modifier.height(12.dp))
-                        KInput("Last Name", formData.lastName, { formData.lastName = it; refreshTick++ })
+                        KInput("Last Name", formData.lastName, { formData.lastName = it; refreshTick++ },
+                            type = KInputType.Name, testTag = "loan_last_name")
                         Spacer(Modifier.height(12.dp))
-                        KInput("Date of Birth (YYYY-MM-DD)", formData.dob, { formData.dob = it; refreshTick++ })
+                        KInput("Date of Birth (YYYY-MM-DD)", formData.dob, { formData.dob = it; refreshTick++ },
+                            placeholder = "YYYY-MM-DD", type = KInputType.Date, testTag = "loan_dob")
                         Spacer(Modifier.height(12.dp))
-                        KInput("Primary Residence", formData.address, { formData.address = it; refreshTick++ })
+                        KInput("Primary Residence", formData.address, { formData.address = it; refreshTick++ },
+                            type = KInputType.Address, testTag = "loan_address", imeAction = ImeAction.Done)
                     }
                     2 -> {
                         Text("Capital & Employment", color = Color.White, fontWeight = FontWeight.Black, fontSize = 20.sp)
                         Text("Verify your income sources for risk assessment.", color = Slate500, fontSize = 13.sp)
                         Spacer(Modifier.height(16.dp))
-                        KInput("Current Employer", formData.employer, { formData.employer = it; refreshTick++ })
+                        KInput("Current Employer", formData.employer, { formData.employer = it; refreshTick++ },
+                            type = KInputType.Name, testTag = "loan_employer")
                         Spacer(Modifier.height(12.dp))
-                        KInput("Job Title", formData.jobTitle, { formData.jobTitle = it; refreshTick++ })
+                        KInput("Job Title", formData.jobTitle, { formData.jobTitle = it; refreshTick++ },
+                            type = KInputType.Name, testTag = "loan_job_title")
                         Spacer(Modifier.height(12.dp))
-                        KInput("Annual Income ($)", if (formData.annualIncome == 0.0) "" else formData.annualIncome.toString(),
-                            { formData.annualIncome = it.toDoubleOrNull() ?: 0.0; refreshTick++ }, isNumber = true)
+                        KInput("Annual Income ($)", annualIncomeText,
+                            { annualIncomeText = it; formData.annualIncome = it.toDoubleOrNull() ?: 0.0; refreshTick++ },
+                            placeholder = "0.00", type = KInputType.Decimal, testTag = "loan_annual_income",
+                            imeAction = ImeAction.Done)
                     }
                     3 -> {
                         Text("Facility Requirements", color = Color.White, fontWeight = FontWeight.Black, fontSize = 20.sp)
                         Text("Define repayment and utilization parameters.", color = Slate500, fontSize = 13.sp)
                         Spacer(Modifier.height(16.dp))
-                        KInput("Required Amount ($)", if (formData.loanAmount == 0.0) "" else formData.loanAmount.toString(),
-                            { formData.loanAmount = it.toDoubleOrNull() ?: 0.0; refreshTick++ }, isNumber = true)
+                        KInput("Required Amount ($)", loanAmountText,
+                            { loanAmountText = it; formData.loanAmount = it.toDoubleOrNull() ?: 0.0; refreshTick++ },
+                            placeholder = "0.00", type = KInputType.Decimal, testTag = "loan_amount",
+                            imeAction = ImeAction.Done)
                         Spacer(Modifier.height(12.dp))
                         Text("PROPOSED TERM", color = Slate500, fontSize = 10.sp, fontWeight = FontWeight.Black)
                         Spacer(Modifier.height(8.dp))
@@ -84,7 +98,7 @@ fun LoanApplicationScreen(loanType: LoanType, onCancel: () -> Unit, onSubmit: su
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .background(Slate950, RoundedCornerShape(16.dp))
-                                    .clickable { termMenuOpen = true }
+                                    .kDropdownTrigger("loan_term", "Select loan term", termMenuOpen) { termMenuOpen = true }
                                     .padding(16.dp)
                             ) {
                                 Text("${formData.loanTerm} Months", color = Color.White, fontSize = 13.sp)
@@ -96,7 +110,8 @@ fun LoanApplicationScreen(loanType: LoanType, onCancel: () -> Unit, onSubmit: su
                             }
                         }
                         Spacer(Modifier.height(12.dp))
-                        KInput("Purpose", formData.purpose, { formData.purpose = it; refreshTick++ })
+                        KInput("Purpose", formData.purpose, { formData.purpose = it; refreshTick++ },
+                            testTag = "loan_purpose", imeAction = ImeAction.Done)
                     }
                 }
 
