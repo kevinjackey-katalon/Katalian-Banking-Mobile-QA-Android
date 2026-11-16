@@ -20,6 +20,23 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.error
+import androidx.compose.ui.semantics.password
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -36,7 +53,8 @@ fun KButton(
     modifier: Modifier = Modifier,
     variant: KButtonVariant = KButtonVariant.Primary,
     enabled: Boolean = true,
-    fullWidth: Boolean = false
+    fullWidth: Boolean = false,
+    testTag: String = text.toTestTag()
 ) {
     val colors = when (variant) {
         KButtonVariant.Primary -> ButtonDefaults.buttonColors(containerColor = Emerald500, contentColor = Slate950)
@@ -49,13 +67,114 @@ fun KButton(
         enabled = enabled,
         colors = colors,
         shape = RoundedCornerShape(50),
-        modifier = (if (fullWidth) modifier.fillMaxWidth() else modifier)
+        modifier = (if (fullWidth) modifier.fillMaxWidth() else modifier).testTag(testTag)
     ) {
         Text(text, fontWeight = FontWeight.Black, fontSize = 14.sp)
     }
 }
 
-/** Mirrors components/common/Input.tsx */
+/**
+ * Semantic type of a [KInput]. Each type maps to the Android-standard keyboard
+ * type, capitalization, autocorrect setting and input filter for that kind of data.
+ */
+enum class KInputType {
+    /** Free-form single-line text (sentence capitalization, autocorrect on). */
+    Text,
+    /** Person names: word capitalization, no autocorrect. */
+    Name,
+    /** Login identifiers: ASCII keyboard, no capitalization, no autocorrect. */
+    Username,
+    /** Passwords: password keyboard (no suggestions/learning), masked, show/hide toggle. */
+    Password,
+    /** Email addresses: email keyboard, no autocorrect. */
+    Email,
+    /** Postal addresses and cities: word capitalization, no autocorrect. */
+    Address,
+    /** Currency amounts: decimal keyboard, digits with up to 2 decimal places. */
+    Decimal,
+    /** Digit-only values such as ZIP codes: number keyboard, digits only. */
+    Digits,
+    /** Dates typed as YYYY-MM-DD: digits and dashes only, max 10 characters. */
+    Date,
+    /** Multi-line free text such as incident descriptions. */
+    Multiline,
+    /** Single-line chat/message composer (sentence capitalization, autocorrect on). */
+    Message
+}
+
+/** Converts a label like "Access Code" into a stable test tag like "access_code". */
+fun String.toTestTag(): String =
+    lowercase().replace(Regex("[^a-z0-9]+"), "_").trim('_')
+
+private val DECIMAL_PATTERN = Regex("^\\d*(\\.\\d{0,2})?$")
+
+private fun KInputType.accepts(candidate: String, maxLength: Int?): Boolean {
+    val limit = maxLength ?: if (this == KInputType.Date) 10 else null
+    if (limit != null && candidate.length > limit) return false
+    return when (this) {
+        KInputType.Decimal -> DECIMAL_PATTERN.matches(candidate)
+        KInputType.Digits -> candidate.all { it.isDigit() }
+        KInputType.Date -> candidate.all { it.isDigit() || it == '-' }
+        else -> true
+    }
+}
+
+private fun KInputType.keyboardOptions(imeAction: ImeAction): KeyboardOptions = when (this) {
+    KInputType.Password -> KeyboardOptions(
+        capitalization = KeyboardCapitalization.None,
+        autoCorrect = false,
+        keyboardType = KeyboardType.Password,
+        imeAction = imeAction
+    )
+    KInputType.Username -> KeyboardOptions(
+        capitalization = KeyboardCapitalization.None,
+        autoCorrect = false,
+        keyboardType = KeyboardType.Ascii,
+        imeAction = imeAction
+    )
+    KInputType.Email -> KeyboardOptions(
+        capitalization = KeyboardCapitalization.None,
+        autoCorrect = false,
+        keyboardType = KeyboardType.Email,
+        imeAction = imeAction
+    )
+    KInputType.Name, KInputType.Address -> KeyboardOptions(
+        capitalization = KeyboardCapitalization.Words,
+        autoCorrect = false,
+        keyboardType = KeyboardType.Text,
+        imeAction = imeAction
+    )
+    KInputType.Decimal -> KeyboardOptions(
+        autoCorrect = false,
+        keyboardType = KeyboardType.Decimal,
+        imeAction = imeAction
+    )
+    KInputType.Digits -> KeyboardOptions(
+        autoCorrect = false,
+        keyboardType = KeyboardType.Number,
+        imeAction = imeAction
+    )
+    KInputType.Date -> KeyboardOptions(
+        autoCorrect = false,
+        keyboardType = KeyboardType.Text,
+        imeAction = imeAction
+    )
+    KInputType.Text, KInputType.Multiline, KInputType.Message -> KeyboardOptions(
+        capitalization = KeyboardCapitalization.Sentences,
+        autoCorrect = true,
+        keyboardType = KeyboardType.Text,
+        imeAction = imeAction
+    )
+}
+
+/**
+ * Mirrors components/common/Input.tsx, built to Android/Material text-field conventions:
+ *  - keyboard type, capitalization and autocorrect chosen per [type];
+ *  - IME action (Next by default, Done/Send/Search on request) with an optional handler;
+ *  - errors shown as Material supporting text and exposed to accessibility;
+ *  - the visible label is announced as the field's accessible name;
+ *  - a stable [testTag] (exposed as resource-id) on the field and on the password toggle.
+ */
 @Composable
 fun KInput(
     label: String,
@@ -63,33 +182,61 @@ fun KInput(
     onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier,
     placeholder: String = "",
-    isPassword: Boolean = false,
-    isNumber: Boolean = false,
-    error: String? = null
+    type: KInputType = KInputType.Text,
+    error: String? = null,
+    testTag: String = label.toTestTag(),
+    accessibilityLabel: String = label,
+    maxLength: Int? = null,
+    imeAction: ImeAction = if (type == KInputType.Multiline) ImeAction.Default else ImeAction.Next,
+    onImeAction: (() -> Unit)? = null,
+    enabled: Boolean = true
 ) {
+    val isPassword = type == KInputType.Password
+    val errorMessage = error
+    val isMultiline = type == KInputType.Multiline
+    var isRevealed by rememberSaveable { mutableStateOf(false) }
+    val maskText = isPassword && !isRevealed
+
     Column(modifier = modifier.fillMaxWidth()) {
-        Text(
-            label.uppercase(),
-            fontSize = 10.sp,
-            fontWeight = FontWeight.Black,
-            color = Slate500,
-            letterSpacing = 1.5.sp
-        )
-        Spacer(Modifier.height(8.dp))
-        var isRevealed by remember { mutableStateOf(false) }
-        val maskText = isPassword && !isRevealed
+        if (label.isNotEmpty()) {
+            Text(
+                label.uppercase(),
+                fontSize = 10.sp,
+                fontWeight = FontWeight.Black,
+                color = Slate500,
+                letterSpacing = 1.5.sp,
+                // The field itself carries this label as its accessible name, so the
+                // visual caption is hidden from accessibility to avoid double announcements.
+                modifier = Modifier.clearAndSetSemantics { }
+            )
+            Spacer(Modifier.height(8.dp))
+        }
         OutlinedTextField(
             value = value,
-            onValueChange = onValueChange,
+            onValueChange = { candidate -> if (type.accepts(candidate, maxLength)) onValueChange(candidate) },
+            enabled = enabled,
             placeholder = { Text(placeholder, color = Slate500) },
-            singleLine = true,
-            visualTransformation = if (maskText) androidx.compose.ui.text.input.PasswordVisualTransformation() else androidx.compose.ui.text.input.VisualTransformation.None,
-            keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
-                keyboardType = if (isNumber) androidx.compose.ui.text.input.KeyboardType.Number else androidx.compose.ui.text.input.KeyboardType.Text
-            ),
+            singleLine = !isMultiline,
+            minLines = if (isMultiline) 3 else 1,
+            maxLines = if (isMultiline) 6 else 1,
+            visualTransformation = if (maskText) PasswordVisualTransformation() else VisualTransformation.None,
+            keyboardOptions = type.keyboardOptions(imeAction),
+            keyboardActions = onImeAction?.let { action ->
+                KeyboardActions(
+                    onDone = { action() },
+                    onGo = { action() },
+                    onSearch = { action() },
+                    onSend = { action() }
+                )
+            } ?: KeyboardActions.Default,
             trailingIcon = if (isPassword) {
                 {
-                    IconButton(onClick = { isRevealed = !isRevealed }) {
+                    IconButton(
+                        onClick = { isRevealed = !isRevealed },
+                        modifier = Modifier
+                            .testTag("${testTag}_visibility_toggle")
+                            .semantics { stateDescription = if (isRevealed) "Password visible" else "Password hidden" }
+                    ) {
                         Icon(
                             imageVector = if (isRevealed) Icons.Default.VisibilityOff else Icons.Default.Visibility,
                             contentDescription = if (isRevealed) "Hide password" else "Show password",
@@ -99,6 +246,9 @@ fun KInput(
                 }
             } else null,
             isError = error != null,
+            supportingText = error?.let { message ->
+                { Text(message, color = Red500, fontSize = 11.sp, fontWeight = FontWeight.Bold) }
+            },
             colors = OutlinedTextFieldDefaults.colors(
                 focusedContainerColor = Slate950,
                 unfocusedContainerColor = Slate950,
@@ -108,13 +258,31 @@ fun KInput(
                 unfocusedTextColor = Color.White
             ),
             shape = RoundedCornerShape(20.dp),
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .testTag(testTag)
+                .semantics {
+                    if (accessibilityLabel.isNotEmpty()) contentDescription = accessibilityLabel
+                    if (maskText) password()
+                    if (errorMessage != null) this.error(errorMessage)
+                }
         )
-        if (error != null) {
-            Text(error, color = Red500, fontSize = 11.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 4.dp, start = 4.dp))
-        }
     }
 }
+
+/**
+ * Makes a custom "select" row behave like a standard Android dropdown: dropdown role,
+ * an accessible click label, expanded/collapsed state, and a stable test tag.
+ */
+fun Modifier.kDropdownTrigger(
+    testTag: String,
+    label: String,
+    expanded: Boolean,
+    onClick: () -> Unit
+): Modifier = this
+    .testTag(testTag)
+    .semantics { stateDescription = if (expanded) "Expanded" else "Collapsed" }
+    .clickable(role = Role.DropdownList, onClickLabel = label, onClick = onClick)
 
 /** Mirrors components/common/Spinner.tsx */
 @Composable
