@@ -3,6 +3,8 @@ name: Build APK
 on:
   push:
     branches: [ main ]
+  pull_request:
+    branches: [ main ]
   workflow_dispatch: {}
 
 permissions:
@@ -48,11 +50,13 @@ jobs:
           path: ${{ steps.apk.outputs.path }}
 
       - name: Remove stale APK asset (if present)
+        if: github.event_name != 'pull_request'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh release delete-asset apk-latest app-debug.apk -y || true
 
       - name: Publish/update GitHub Release with APK
+        if: github.event_name != 'pull_request'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: apk-latest
