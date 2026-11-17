@@ -11,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -22,6 +23,7 @@ import com.katalon.katalianbanking.ui.components.KButton
 import com.katalon.katalianbanking.ui.components.KButtonVariant
 import com.katalon.katalianbanking.ui.components.PillBadge
 import com.katalon.katalianbanking.ui.components.SectionCard
+import com.katalon.katalianbanking.ui.components.toSnakeCase
 import com.katalon.katalianbanking.ui.theme.*
 
 private fun accountIcon(type: AccountType): String = when (type) {
@@ -58,7 +60,8 @@ fun DashboardScreen(
                     "$" + "%,.2f".format(totalBalance),
                     color = Color.White,
                     fontWeight = FontWeight.Black,
-                    fontSize = 40.sp
+                    fontSize = 40.sp,
+                    modifier = Modifier.testTag("dashboard_net_liquidity")
                 )
                 Spacer(Modifier.height(12.dp))
                 Row {
@@ -80,7 +83,7 @@ fun DashboardScreen(
         }
 
         items(user.accounts) { acc ->
-            AccountCard(acc, onClick = { if (acc.status != AccountStatus.Frozen) onOpenAccount(acc.id) })
+            AccountCard(acc, testTag = "account_card_${acc.id}", onClick = { if (acc.status != AccountStatus.Frozen) onOpenAccount(acc.id) })
             Spacer(Modifier.height(12.dp))
         }
 
@@ -103,6 +106,7 @@ fun DashboardScreen(
                             .weight(1f)
                             .padding(4.dp)
                             .background(Slate900, RoundedCornerShape(20.dp))
+                            .testTag("apply_${type.name.toSnakeCase()}")
                             .clickable { onApply(type) }
                             .padding(vertical = 20.dp),
                         contentAlignment = Alignment.Center
@@ -120,10 +124,10 @@ fun DashboardScreen(
             Text("ASSET MANAGEMENT", color = Slate500, fontWeight = FontWeight.Black, fontSize = 11.sp, letterSpacing = 1.sp)
             Spacer(Modifier.height(12.dp))
 
-            QuickLink("Document Library", "\uD83D\uDCDA", onDocumentLibrary)
-            QuickLink("Request Lending", "\uD83C\uDFDB\uFE0F", onLoans)
-            QuickLink("Freeze All Cards", "\u2744\uFE0F", onFreezeAll)
-            QuickLink("Fraud Reporting / Help Center", "\uD83D\uDEE1\uFE0F", onContact)
+            QuickLink("Document Library", "\uD83D\uDCDA", onDocumentLibrary, testTag = "quick_link_document_library")
+            QuickLink("Request Lending", "\uD83C\uDFDB\uFE0F", onLoans, testTag = "quick_link_request_lending")
+            QuickLink("Freeze All Cards", "\u2744\uFE0F", onFreezeAll, testTag = "quick_link_freeze_all_cards")
+            QuickLink("Fraud Reporting / Help Center", "\uD83D\uDEE1\uFE0F", onContact, testTag = "quick_link_help_center")
 
             Spacer(Modifier.height(24.dp))
         }
@@ -131,12 +135,13 @@ fun DashboardScreen(
 }
 
 @Composable
-private fun AccountCard(acc: Account, onClick: () -> Unit) {
+private fun AccountCard(acc: Account, testTag: String, onClick: () -> Unit) {
     val isFrozen = acc.status == AccountStatus.Frozen
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .background(if (isFrozen) Slate950 else Slate900, RoundedCornerShape(24.dp))
+            .testTag(testTag)
             .clickable(enabled = !isFrozen, onClick = onClick)
             .padding(20.dp)
     ) {
@@ -151,12 +156,13 @@ private fun AccountCard(acc: Account, onClick: () -> Unit) {
 }
 
 @Composable
-private fun QuickLink(label: String, icon: String, onClick: () -> Unit) {
+private fun QuickLink(label: String, icon: String, onClick: () -> Unit, testTag: String) {
     Column {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(WhiteFaint, RoundedCornerShape(16.dp))
+                .testTag(testTag)
                 .clickable(onClick = onClick)
                 .padding(16.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
