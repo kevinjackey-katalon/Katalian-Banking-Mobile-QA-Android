@@ -11,6 +11,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
@@ -103,9 +104,9 @@ fun LoanApplicationScreen(loanType: LoanType, onCancel: () -> Unit, onSubmit: su
                             ) {
                                 Text("${formData.loanTerm} Months", color = Color.White, fontSize = 13.sp)
                             }
-                            DropdownMenu(expanded = termMenuOpen, onDismissRequest = { termMenuOpen = false }) {
+                            DropdownMenu(expanded = termMenuOpen, onDismissRequest = { termMenuOpen = false }, modifier = Modifier.exposeTagsAsResourceIds()) {
                                 listOf(12, 24, 36).forEach { term ->
-                                    DropdownMenuItem(text = { Text("$term Months") }, onClick = { formData.loanTerm = term; refreshTick++; termMenuOpen = false })
+                                    DropdownMenuItem(text = { Text("$term Months") }, onClick = { formData.loanTerm = term; refreshTick++; termMenuOpen = false }, modifier = Modifier.testTag("loan_term_option_$term"))
                                 }
                             }
                         }

@@ -10,6 +10,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
@@ -50,11 +51,12 @@ private fun AccountDropdown(
                     fontWeight = FontWeight.Medium
                 )
             }
-            DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }, modifier = Modifier.exposeTagsAsResourceIds()) {
                 options.forEach { acc ->
                     DropdownMenuItem(
                         text = { Text("${acc.type.label} (${acc.accountNumber}) — $${"%,.2f".format(acc.balance)}") },
-                        onClick = { onSelect(acc.id); expanded = false }
+                        onClick = { onSelect(acc.id); expanded = false },
+                        modifier = Modifier.testTag("${testTag}_option_${acc.id}")
                     )
                 }
             }

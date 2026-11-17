@@ -11,6 +11,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
@@ -65,9 +66,9 @@ fun DepositScreen(user: User, onNavigateBack: () -> Unit, onDeposit: suspend (St
                     Text("Define your funding source and capital amount.", color = Slate500, fontSize = 13.sp)
                     Spacer(Modifier.height(20.dp))
                     Row {
-                        DepositMethodOption("Electronic Transfer", "\uD83C\uDFDB\uFE0F", method == DepositMethod.ACH, Modifier.weight(1f)) { method = DepositMethod.ACH }
+                        DepositMethodOption("Electronic Transfer", "\uD83C\uDFDB\uFE0F", method == DepositMethod.ACH, testTag = "deposit_method_ach", modifier = Modifier.weight(1f)) { method = DepositMethod.ACH }
                         Spacer(Modifier.width(12.dp))
-                        DepositMethodOption("Check Deposit", "\uD83D\uDCC4", method == DepositMethod.Check, Modifier.weight(1f)) { method = DepositMethod.Check }
+                        DepositMethodOption("Check Deposit", "\uD83D\uDCC4", method == DepositMethod.Check, testTag = "deposit_method_check", modifier = Modifier.weight(1f)) { method = DepositMethod.Check }
                     }
                     Spacer(Modifier.height(20.dp))
                     Text("DESTINATION FACILITY", color = Slate500, fontSize = 10.sp, fontWeight = FontWeight.Black)
@@ -85,11 +86,12 @@ fun DepositScreen(user: User, onNavigateBack: () -> Unit, onDeposit: suspend (St
                                 color = Color.White, fontSize = 13.sp
                             )
                         }
-                        DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
+                        DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }, modifier = Modifier.exposeTagsAsResourceIds()) {
                             user.accounts.forEach { acc ->
                                 DropdownMenuItem(
                                     text = { Text("${acc.type.label} - ${acc.accountNumber}") },
-                                    onClick = { toAccountId = acc.id; menuOpen = false }
+                                    onClick = { toAccountId = acc.id; menuOpen = false },
+                                    modifier = Modifier.testTag("deposit_destination_account_option_${acc.id}")
                                 )
                             }
                         }
@@ -125,9 +127,9 @@ fun DepositScreen(user: User, onNavigateBack: () -> Unit, onDeposit: suspend (St
                     Text("Upload high-resolution images of the check instrument.", color = Slate500, fontSize = 13.sp)
                     Spacer(Modifier.height(20.dp))
                     Row {
-                        CheckCaptureBox("Check Front", checkFrontCaptured, Modifier.weight(1f)) { checkFrontCaptured = true }
+                        CheckCaptureBox("Check Front", checkFrontCaptured, testTag = "check_capture_front", modifier = Modifier.weight(1f)) { checkFrontCaptured = true }
                         Spacer(Modifier.width(12.dp))
-                        CheckCaptureBox("Check Back", checkBackCaptured, Modifier.weight(1f)) { checkBackCaptured = true }
+                        CheckCaptureBox("Check Back", checkBackCaptured, testTag = "check_capture_back", modifier = Modifier.weight(1f)) { checkBackCaptured = true }
                     }
                     Spacer(Modifier.height(16.dp))
                     Text(
@@ -197,9 +199,10 @@ fun DepositScreen(user: User, onNavigateBack: () -> Unit, onDeposit: suspend (St
 }
 
 @Composable
-private fun DepositMethodOption(label: String, icon: String, selected: Boolean, modifier: Modifier = Modifier, onClick: () -> Unit) {
+private fun DepositMethodOption(label: String, icon: String, selected: Boolean, testTag: String, modifier: Modifier = Modifier, onClick: () -> Unit) {
     Box(
         modifier = modifier
+            .testTag(testTag)
             .background(if (selected) Emerald500.copy(alpha = 0.1f) else Slate950, RoundedCornerShape(20.dp))
             .clickable(onClick = onClick)
             .padding(vertical = 20.dp),
@@ -214,7 +217,7 @@ private fun DepositMethodOption(label: String, icon: String, selected: Boolean, 
 }
 
 @Composable
-private fun CheckCaptureBox(label: String, captured: Boolean, modifier: Modifier = Modifier, onClick: () -> Unit) {
+private fun CheckCaptureBox(label: String, captured: Boolean, testTag: String, modifier: Modifier = Modifier, onClick: () -> Unit) {
     Column(modifier = modifier) {
         Text(label.uppercase(), color = Slate500, fontSize = 10.sp, fontWeight = FontWeight.Black)
         Spacer(Modifier.height(8.dp))
@@ -222,6 +225,7 @@ private fun CheckCaptureBox(label: String, captured: Boolean, modifier: Modifier
             modifier = Modifier
                 .fillMaxWidth()
                 .height(100.dp)
+                .testTag(testTag)
                 .background(if (captured) Emerald500.copy(alpha = 0.08f) else Slate950, RoundedCornerShape(20.dp))
                 .clickable(onClick = onClick),
             contentAlignment = Alignment.Center

@@ -56,3 +56,22 @@ older releases cannot open) and JDK 17 or newer. Gradle 9.6, Kotlin 2.4 and the 
 ### Demo credentials
 - `bankinguser123` / `notapassword@123` — active user with Checking, Savings, and Credit Card accounts
 - `lockedout25` / `lockedoutpassword343` — locked account (demonstrates the "Account locked" error state)
+
+## Test automation tags
+
+Every control automation needs to act on, and the values it needs to assert, carries a stable
+Compose `testTag`. They are exposed to Appium / UiAutomator2 / Katalon as the Android `resource-id`
+(`testTagsAsResourceId` is enabled at the root in `MainActivity`).
+
+- **The list of tags is `app/src/test/resources/test-tags.txt`.** `TestTagContractTest` scans the
+  source and fails CI if a tag is removed, renamed or added without updating that file, so a
+  change that would break existing locators is always visible in review.
+- **Tags never derive from visible text.** `KButton` and `KInput` require an explicit `testTag`.
+- **Templated tags** appear in the list as written in the source, for example
+  `account_card_${acc.id}` resolves to `account_card_acc1-1` for the seeded checking account;
+  `apply_${type.name.toSnakeCase()}` resolves to `apply_credit_card`; dropdown choices use
+  `<dropdown tag>_option_<value>`.
+- **Clickable cards merge their children** into one accessibility node, so read a card's text
+  from the card itself (for example `account_card_acc1-1`), not from a tag on an inner label.
+- **Dropdown menus open in their own window.** Each menu calls `Modifier.exposeTagsAsResourceIds()`
+  so its option tags reach the accessibility tree.

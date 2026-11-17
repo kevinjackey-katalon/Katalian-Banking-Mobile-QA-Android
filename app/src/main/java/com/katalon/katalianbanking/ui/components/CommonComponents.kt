@@ -17,6 +17,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -32,6 +33,7 @@ import androidx.compose.ui.semantics.error
 import androidx.compose.ui.semantics.password
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
@@ -252,7 +254,7 @@ fun KInput(
             } else null,
             isError = error != null,
             supportingText = error?.let { message ->
-                { Text(message, color = Red500, fontSize = 11.sp, fontWeight = FontWeight.Bold) }
+                { Text(message, color = Red500, fontSize = 11.sp, fontWeight = FontWeight.Bold, modifier = Modifier.testTag("${testTag}_error")) }
             },
             colors = OutlinedTextFieldDefaults.colors(
                 focusedContainerColor = Slate950,
@@ -289,6 +291,18 @@ fun Modifier.kDropdownTrigger(
     .semantics { stateDescription = if (expanded) "Expanded" else "Collapsed" }
     .clickable(role = Role.DropdownList, onClickLabel = label, onClick = onClick)
 
+/**
+ * Compose exposes testTag as `resource-id` only inside a composition that declares
+ * testTagsAsResourceId (done once at the root in MainActivity). Popups such as DropdownMenu
+ * are separate windows with their own composition, so they must opt in again.
+ */
+@OptIn(ExperimentalComposeUiApi::class)
+fun Modifier.exposeTagsAsResourceIds(): Modifier = semantics { testTagsAsResourceId = true }
+
+/** "CreditCard" -> "credit_card" (builds stable tags from enum names). */
+fun String.toSnakeCase(): String =
+    replace(Regex("(?<=[a-z0-9])(?=[A-Z])"), "_").lowercase()
+
 /** Mirrors components/common/Spinner.tsx */
 @Composable
 fun KSpinner(modifier: Modifier = Modifier) {
@@ -314,7 +328,7 @@ fun KTopBar(
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 if (onBack != null) {
-                    IconButton(onClick = onBack) {
+                    IconButton(onClick = onBack, modifier = Modifier.testTag("top_bar_back")) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
                     }
                 }
@@ -354,7 +368,7 @@ fun ErrorBanner(message: String, modifier: Modifier = Modifier) {
             fontWeight = FontWeight.Black,
             fontSize = 10.sp,
             textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth().testTag("error_banner")
         )
     }
 }

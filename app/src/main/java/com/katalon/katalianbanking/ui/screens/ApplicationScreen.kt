@@ -11,6 +11,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
@@ -132,9 +133,9 @@ fun ApplicationScreen(user: User, accountType: AccountType, onCancel: () -> Unit
                                 .kDropdownTrigger("application_state", "Select state", stateMenuOpen) { stateMenuOpen = true }
                                 .padding(16.dp)
                         ) { Text(formData.state, color = Color.White, fontSize = 13.sp) }
-                        DropdownMenu(expanded = stateMenuOpen, onDismissRequest = { stateMenuOpen = false }) {
+                        DropdownMenu(expanded = stateMenuOpen, onDismissRequest = { stateMenuOpen = false }, modifier = Modifier.exposeTagsAsResourceIds()) {
                             STATES.forEach { s ->
-                                DropdownMenuItem(text = { Text(s) }, onClick = { formData.state = s; refreshTick++; stateMenuOpen = false })
+                                DropdownMenuItem(text = { Text(s) }, onClick = { formData.state = s; refreshTick++; stateMenuOpen = false }, modifier = Modifier.testTag("application_state_option_${s.toTestTag()}"))
                             }
                         }
                     }
@@ -170,12 +171,13 @@ fun ApplicationScreen(user: User, accountType: AccountType, onCancel: () -> Unit
                         ) {
                             Text(selectedFunding?.let { "${it.type.label} (Ending ${it.accountNumber.takeLast(4)})" } ?: "External Wire / New Funds", color = Color.White, fontSize = 13.sp)
                         }
-                        DropdownMenu(expanded = fundingMenuOpen, onDismissRequest = { fundingMenuOpen = false }) {
-                            DropdownMenuItem(text = { Text("External Wire / New Funds") }, onClick = { formData.depositFromAccountId = null; refreshTick++; fundingMenuOpen = false })
+                        DropdownMenu(expanded = fundingMenuOpen, onDismissRequest = { fundingMenuOpen = false }, modifier = Modifier.exposeTagsAsResourceIds()) {
+                            DropdownMenuItem(text = { Text("External Wire / New Funds") }, onClick = { formData.depositFromAccountId = null; refreshTick++; fundingMenuOpen = false }, modifier = Modifier.testTag("application_funding_source_option_external"))
                             eligibleAccounts.forEach { acc ->
                                 DropdownMenuItem(
                                     text = { Text("${acc.type.label} (Ending ${acc.accountNumber.takeLast(4)})") },
-                                    onClick = { formData.depositFromAccountId = acc.id; refreshTick++; fundingMenuOpen = false }
+                                    onClick = { formData.depositFromAccountId = acc.id; refreshTick++; fundingMenuOpen = false },
+                                    modifier = Modifier.testTag("application_funding_source_option_${acc.id}")
                                 )
                             }
                         }

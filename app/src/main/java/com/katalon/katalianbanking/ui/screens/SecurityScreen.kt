@@ -11,6 +11,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -94,9 +95,9 @@ fun SecurityScreen(user: User, action: SecurityAction, onCancel: () -> Unit, onC
                                 modifier = Modifier.fillMaxWidth().background(Slate950, RoundedCornerShape(16.dp))
                                     .kDropdownTrigger("security_affected_account", "Select affected account", menuOpen) { menuOpen = true }.padding(16.dp)
                             ) { Text(selected?.let { "${it.type.label} (Ending ${it.accountNumber.takeLast(4)})" } ?: "Select", color = Color.White, fontSize = 13.sp) }
-                            DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
+                            DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }, modifier = Modifier.exposeTagsAsResourceIds()) {
                                 user.accounts.forEach { acc ->
-                                    DropdownMenuItem(text = { Text("${acc.type.label} (Ending ${acc.accountNumber.takeLast(4)})") }, onClick = { selectedAssetId = acc.id; menuOpen = false })
+                                    DropdownMenuItem(text = { Text("${acc.type.label} (Ending ${acc.accountNumber.takeLast(4)})") }, onClick = { selectedAssetId = acc.id; menuOpen = false }, modifier = Modifier.testTag("security_affected_account_option_${acc.id}"))
                                 }
                             }
                         }
