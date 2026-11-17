@@ -89,7 +89,9 @@ fun ApplicationScreen(user: User, accountType: AccountType, onCancel: () -> Unit
                             Spacer(Modifier.height(20.dp))
                             KButton(text = "Enter Facility Dashboard", onClick = {
                                 scope.launch { onSubmit(accountType, formData); onCancel() }
-                            })
+                            },
+                                testTag = "enter_facility_dashboard"
+                            )
                         }
                     }
                 }
@@ -184,9 +186,9 @@ fun ApplicationScreen(user: User, accountType: AccountType, onCancel: () -> Unit
             if (!loading && !success) {
                 Spacer(Modifier.height(24.dp))
                 Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
-                    if (step > 1) KButton(text = "Back", onClick = { errors = emptyMap(); step -= 1 }, variant = KButtonVariant.Secondary) else Spacer(Modifier.width(1.dp))
+                    if (step > 1) KButton(text = "Back", onClick = { errors = emptyMap(); step -= 1 }, variant = KButtonVariant.Secondary, testTag = "back") else Spacer(Modifier.width(1.dp))
                     if (step < maxSteps) {
-                        KButton(text = "Continue", onClick = { if (validate(step)) step += 1 })
+                        KButton(text = "Continue", onClick = { if (validate(step)) step += 1 }, testTag = "continue")
                     } else {
                         KButton(text = "Authorize Provisioning", onClick = {
                             if (validate(step)) {
@@ -197,7 +199,9 @@ fun ApplicationScreen(user: User, accountType: AccountType, onCancel: () -> Unit
                                     success = true
                                 }
                             }
-                        })
+                        },
+                            testTag = "authorize_provisioning"
+                        )
                     }
                 }
             }
