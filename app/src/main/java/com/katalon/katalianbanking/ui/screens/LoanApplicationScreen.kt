@@ -117,9 +117,9 @@ fun LoanApplicationScreen(loanType: LoanType, onCancel: () -> Unit, onSubmit: su
 
                 Spacer(Modifier.height(24.dp))
                 Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
-                    if (step > 1) KButton(text = "Back", onClick = { step -= 1 }, variant = KButtonVariant.Secondary) else Spacer(Modifier.width(1.dp))
+                    if (step > 1) KButton(text = "Back", onClick = { step -= 1 }, variant = KButtonVariant.Secondary, testTag = "back") else Spacer(Modifier.width(1.dp))
                     if (step < 3) {
-                        KButton(text = "Continue", onClick = { step += 1 })
+                        KButton(text = "Continue", onClick = { step += 1 }, testTag = "continue")
                     } else {
                         KButton(text = "Submit Application", onClick = {
                             loading = true
@@ -129,7 +129,9 @@ fun LoanApplicationScreen(loanType: LoanType, onCancel: () -> Unit, onSubmit: su
                                 loading = false
                                 onCancel()
                             }
-                        })
+                        },
+                            testTag = "submit_application"
+                        )
                     }
                 }
             }
