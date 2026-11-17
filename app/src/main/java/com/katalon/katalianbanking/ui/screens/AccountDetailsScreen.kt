@@ -13,6 +13,7 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
@@ -20,6 +21,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -47,6 +49,16 @@ private fun monthLabel(isoDate: String): String {
         "${zdt.month.getDisplayName(TextStyle.FULL, Locale.getDefault())} ${zdt.year}"
     } catch (e: Exception) {
         "Unknown"
+    }
+}
+
+/** Locale-independent key for a month ("2026_11"), used to build stable test tags. */
+private fun monthKey(isoDate: String): String {
+    return try {
+        val zdt = Instant.parse(isoDate).atZone(ZoneId.systemDefault())
+        "%04d_%02d".format(Locale.US, zdt.year, zdt.monthValue)
+    } catch (e: Exception) {
+        "unknown"
     }
 }
 
@@ -121,6 +133,7 @@ fun AccountDetailsScreen(account: Account) {
     var downloading by remember { mutableStateOf(false) }
 
     val months = remember(account) { listOf("All") + account.transactions.map { monthLabel(it.date) }.distinct() }
+    val monthKeys = remember(account) { account.transactions.associate { monthLabel(it.date) to monthKey(it.date) } }
     val filtered = remember(account, selectedMonth) {
         val sorted = account.transactions.sortedByDescending { it.date }
         if (selectedMonth == "All") sorted else sorted.filter { monthLabel(it.date) == selectedMonth }
@@ -143,7 +156,7 @@ fun AccountDetailsScreen(account: Account) {
         ) {
             Column {
                 Text("AVAILABLE CAPITAL", color = Slate500, fontSize = 10.sp, fontWeight = FontWeight.Black)
-                Text("$" + "%,.2f".format(account.balance), color = Color.White, fontWeight = FontWeight.Black, fontSize = 26.sp)
+                Text("$" + "%,.2f".format(account.balance), color = Color.White, fontWeight = FontWeight.Black, fontSize = 26.sp, modifier = Modifier.testTag("ledger_balance"))
             }
             KButton(
                 text = if (downloading) "Provisioning..." else "Download Statement",
@@ -182,8 +195,10 @@ fun AccountDetailsScreen(account: Account) {
         Row(modifier = Modifier.horizontalScroll(rememberScrollState())) {
             months.forEach { m ->
                 val selected = m == selectedMonth
+                val key = if (m == "All") "all" else monthKeys[m] ?: "unknown"
                 Box(
                     modifier = Modifier
+                        .testTag("month_filter_$key")
                         .padding(end = 8.dp)
                         .background(if (selected) Emerald500 else WhiteFaint, RoundedCornerShape(50))
                         .clickable { selectedMonth = m }
@@ -197,20 +212,21 @@ fun AccountDetailsScreen(account: Account) {
 
         if (filtered.isEmpty()) {
             Box(modifier = Modifier.fillMaxWidth().padding(vertical = 48.dp)) {
-                Text("No ledger entries detected for this period.", color = Slate500, fontWeight = FontWeight.Bold)
+                Text("No ledger entries detected for this period.", color = Slate500, fontWeight = FontWeight.Bold, modifier = Modifier.testTag("ledger_empty"))
             }
         } else {
             LazyColumn {
-                items(filtered) { tx -> TransactionRow(tx) }
+                itemsIndexed(filtered) { index, tx -> TransactionRow(tx, index) }
             }
         }
     }
 }
 
 @Composable
-private fun TransactionRow(tx: Transaction) {
+private fun TransactionRow(tx: Transaction, index: Int) {
     Row(
         modifier = Modifier
+            .testTag("transaction_row_$index")
             .fillMaxWidth()
             .background(Slate900.copy(alpha = 0.5f), RoundedCornerShape(16.dp))
             .padding(16.dp)
