@@ -42,7 +42,7 @@ fun LoansScreen(onApplyLoan: (LoanType) -> Unit, onContact: () -> Unit) {
                 Text("RATES FROM", color = Slate400, fontSize = 9.sp, fontWeight = FontWeight.Black)
                 Text(product.rate + " APR", color = Emerald500, fontWeight = FontWeight.Black, fontSize = 24.sp)
                 Spacer(Modifier.height(16.dp))
-                KButton(text = "Apply for Funding", onClick = { onApplyLoan(product.type) }, fullWidth = true)
+                KButton(text = "Apply for Funding", onClick = { onApplyLoan(product.type) }, fullWidth = true, testTag = "apply_for_funding")
             }
         }
         item {
@@ -53,7 +53,7 @@ fun LoansScreen(onApplyLoan: (LoanType) -> Unit, onContact: () -> Unit) {
                     color = Slate400, fontSize = 13.sp
                 )
                 Spacer(Modifier.height(16.dp))
-                KButton(text = "Contact Asset Division", onClick = onContact, variant = KButtonVariant.Secondary)
+                KButton(text = "Contact Asset Division", onClick = onContact, variant = KButtonVariant.Secondary, testTag = "contact_asset_division")
             }
             Spacer(Modifier.height(24.dp))
         }
