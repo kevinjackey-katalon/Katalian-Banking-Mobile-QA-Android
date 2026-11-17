@@ -3,6 +3,8 @@ name: Build APK
 on:
   push:
     branches: [ main ]
+  pull_request:
+    branches: [ main ]
   workflow_dispatch: {}
 
 permissions:
@@ -23,6 +25,11 @@ jobs:
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
+        with:
+          # The action's default package list includes the legacy "tools" package,
+          # which sdkmanager can no longer find (exit code 1). Install only what exists;
+          # platforms and build-tools are installed in the next step.
+          packages: 'platform-tools'
 
       - name: Install required SDK packages
         run: |
@@ -48,11 +55,13 @@ jobs:
           path: ${{ steps.apk.outputs.path }}
 
       - name: Remove stale APK asset (if present)
+        if: github.event_name != 'pull_request'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh release delete-asset apk-latest app-debug.apk -y || true
 
       - name: Publish/update GitHub Release with APK
+        if: github.event_name != 'pull_request'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: apk-latest
