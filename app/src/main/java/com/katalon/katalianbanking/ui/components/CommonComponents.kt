@@ -45,7 +45,12 @@ import com.katalon.katalianbanking.ui.theme.*
 
 enum class KButtonVariant { Primary, Secondary, Danger, Ghost }
 
-/** Mirrors components/common/Button.tsx */
+/**
+ * Mirrors components/common/Button.tsx
+ *
+ * [testTag] is required on purpose: it is the automation contract (exposed as resource-id)
+ * and must never be derived from the visible text, which can change or be translated.
+ */
 @Composable
 fun KButton(
     text: String,
@@ -54,7 +59,7 @@ fun KButton(
     variant: KButtonVariant = KButtonVariant.Primary,
     enabled: Boolean = true,
     fullWidth: Boolean = false,
-    testTag: String = text.toTestTag()
+    testTag: String
 ) {
     val colors = when (variant) {
         KButtonVariant.Primary -> ButtonDefaults.buttonColors(containerColor = Emerald500, contentColor = Slate950)
@@ -184,7 +189,7 @@ fun KInput(
     placeholder: String = "",
     type: KInputType = KInputType.Text,
     error: String? = null,
-    testTag: String = label.toTestTag(),
+    testTag: String,
     accessibilityLabel: String = label,
     maxLength: Int? = null,
     imeAction: ImeAction = if (type == KInputType.Multiline) ImeAction.Default else ImeAction.Next,
@@ -327,7 +332,7 @@ fun KTopBar(
                         Text("PREMIER MEMBER", color = Emerald500, fontWeight = FontWeight.Bold, fontSize = 9.sp)
                     }
                     Spacer(Modifier.width(12.dp))
-                    KButton(text = "Sign Out", onClick = onLogout, variant = KButtonVariant.Secondary)
+                    KButton(text = "Sign Out", onClick = onLogout, variant = KButtonVariant.Secondary, testTag = "sign_out")
                 }
             }
         }
