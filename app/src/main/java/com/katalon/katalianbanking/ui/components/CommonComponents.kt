@@ -108,7 +108,7 @@ fun String.toTestTag(): String =
 
 private val DECIMAL_PATTERN = Regex("^\\d*(\\.\\d{0,2})?$")
 
-private fun KInputType.accepts(candidate: String, maxLength: Int?): Boolean {
+internal fun KInputType.accepts(candidate: String, maxLength: Int?): Boolean {
     val limit = maxLength ?: if (this == KInputType.Date) 10 else null
     if (limit != null && candidate.length > limit) return false
     return when (this) {
