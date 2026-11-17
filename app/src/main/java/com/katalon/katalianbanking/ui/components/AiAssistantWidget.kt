@@ -92,7 +92,7 @@ fun AiAssistantWidget(allUsers: List<User>) {
                                 }
                             }
                             response != null -> {
-                                Text(response!!, color = Color.White, fontSize = 13.sp, lineHeight = 18.sp)
+                                Text(response.orEmpty(), color = Color.White, fontSize = 13.sp, lineHeight = 18.sp)
                             }
                             else -> {
                                 Text(
