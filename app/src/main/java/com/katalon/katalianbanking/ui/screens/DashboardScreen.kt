@@ -68,9 +68,9 @@ fun DashboardScreen(
                 }
                 Spacer(Modifier.height(20.dp))
                 Row {
-                    KButton(text = "Move Funds", onClick = onTransfer, modifier = Modifier.weight(1f))
+                    KButton(text = "Move Funds", onClick = onTransfer, modifier = Modifier.weight(1f), testTag = "move_funds")
                     Spacer(Modifier.width(12.dp))
-                    KButton(text = "Deposit", onClick = onDeposit, variant = KButtonVariant.Secondary, modifier = Modifier.weight(1f))
+                    KButton(text = "Deposit", onClick = onDeposit, variant = KButtonVariant.Secondary, modifier = Modifier.weight(1f), testTag = "deposit")
                 }
             }
 
