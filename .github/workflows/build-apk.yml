@@ -42,6 +42,27 @@ jobs:
           gradle-version: 8.6
           arguments: assembleDebug --no-daemon
 
+      - name: Unit tests and release (R8) build check
+        uses: gradle/gradle-build-action@v3
+        with:
+          gradle-version: 8.6
+          arguments: testDebugUnitTest assembleRelease --no-daemon
+
+      - name: Lint (informational)
+        continue-on-error: true
+        uses: gradle/gradle-build-action@v3
+        with:
+          gradle-version: 8.6
+          arguments: lintDebug --no-daemon
+
+      - name: Upload lint report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lint-report
+          path: app/build/reports/lint-results-debug.html
+          if-no-files-found: ignore
+
       - name: Locate APK
         id: apk
         run: |
