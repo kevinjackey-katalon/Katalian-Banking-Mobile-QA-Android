@@ -7,6 +7,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -17,6 +18,7 @@ import com.katalon.katalianbanking.data.LoanType
 import com.katalon.katalianbanking.ui.components.KButton
 import com.katalon.katalianbanking.ui.components.KButtonVariant
 import com.katalon.katalianbanking.ui.components.SectionCard
+import com.katalon.katalianbanking.ui.components.toSnakeCase
 import com.katalon.katalianbanking.ui.theme.Emerald500
 import com.katalon.katalianbanking.ui.theme.Slate400
 
@@ -33,7 +35,7 @@ fun LoansScreen(onApplyLoan: (LoanType) -> Unit, onContact: () -> Unit) {
             Spacer(Modifier.height(24.dp))
         }
         items(LOAN_PRODUCTS) { product: LoanProduct ->
-            SectionCard(modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)) {
+            SectionCard(modifier = Modifier.testTag("loan_product_${product.type.name.toSnakeCase()}").fillMaxWidth().padding(bottom = 16.dp)) {
                 Text(product.icon, fontSize = 40.sp)
                 Spacer(Modifier.height(12.dp))
                 Text(product.type.label, color = Color.White, fontWeight = FontWeight.Black, fontSize = 22.sp)
