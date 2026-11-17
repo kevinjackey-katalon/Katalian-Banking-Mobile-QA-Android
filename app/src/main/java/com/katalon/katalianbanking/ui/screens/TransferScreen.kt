@@ -22,7 +22,13 @@ import com.katalon.katalianbanking.ui.theme.*
 import kotlinx.coroutines.launch
 
 @Composable
-private fun AccountDropdown(label: String, options: List<Account>, selectedId: String, onSelect: (String) -> Unit) {
+private fun AccountDropdown(
+    label: String,
+    testTag: String,
+    options: List<Account>,
+    selectedId: String,
+    onSelect: (String) -> Unit
+) {
     var expanded by remember { mutableStateOf(false) }
     val selected = options.find { it.id == selectedId }
     Column(modifier = Modifier.fillMaxWidth()) {
@@ -33,7 +39,7 @@ private fun AccountDropdown(label: String, options: List<Account>, selectedId: S
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(Slate950, RoundedCornerShape(16.dp))
-                    .kDropdownTrigger(label.toTestTag(), "Select ${label.lowercase()}", expanded) { expanded = true }
+                    .kDropdownTrigger(testTag, "Select ${label.lowercase()}", expanded) { expanded = true }
                     .padding(16.dp),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
@@ -93,7 +99,7 @@ fun TransferScreen(user: User, onNavigateBack: () -> Unit, onTransfer: suspend (
                 Text("RECIPIENT: ${toAccount?.type?.label} ${toAccount?.accountNumber}", color = Slate400, fontSize = 13.sp)
                 Spacer(Modifier.height(24.dp))
                 Row {
-                    KButton(text = "Back", onClick = { isConfirming = false }, variant = KButtonVariant.Secondary, modifier = Modifier.weight(1f))
+                    KButton(text = "Back", onClick = { isConfirming = false }, variant = KButtonVariant.Secondary, modifier = Modifier.weight(1f), testTag = "back")
                     Spacer(Modifier.width(12.dp))
                     KButton(
                         text = if (isSubmitting) "Processing..." else "Authorize ${if (isCreditPayment) "Payment" else "Transfer"}",
@@ -106,7 +112,8 @@ fun TransferScreen(user: User, onNavigateBack: () -> Unit, onTransfer: suspend (
                                 onNavigateBack()
                             }
                         },
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
+                        testTag = if (isSubmitting) "processing" else if (isCreditPayment) "authorize_payment" else "authorize_transfer"
                     )
                 }
             } else {
@@ -114,7 +121,12 @@ fun TransferScreen(user: User, onNavigateBack: () -> Unit, onTransfer: suspend (
                     ErrorBanner(error)
                     Spacer(Modifier.height(16.dp))
                 }
-                AccountDropdown("Origin Liquidity", sourceAccounts, fromAccountId) { newId ->
+                AccountDropdown(
+                    label = "Origin Liquidity",
+                    testTag = "origin_liquidity",
+                    options = sourceAccounts,
+                    selectedId = fromAccountId
+                ) { newId ->
                     fromAccountId = newId
                     if (newId == toAccountId) {
                         toAccountId = recipientAccounts.firstOrNull { it.id != newId }?.id ?: toAccountId
@@ -122,8 +134,10 @@ fun TransferScreen(user: User, onNavigateBack: () -> Unit, onTransfer: suspend (
                 }
                 Spacer(Modifier.height(16.dp))
                 AccountDropdown(
-                    if (isCreditPayment) "Credit Facility Recipient" else "Recipient Facility",
-                    recipientAccounts, toAccountId
+                    label = if (isCreditPayment) "Credit Facility Recipient" else "Recipient Facility",
+                    testTag = if (isCreditPayment) "credit_facility_recipient" else "recipient_facility",
+                    options = recipientAccounts,
+                    selectedId = toAccountId
                 ) { toAccountId = it }
 
                 if (isCreditPayment && toAccount != null) {
@@ -138,9 +152,9 @@ fun TransferScreen(user: User, onNavigateBack: () -> Unit, onTransfer: suspend (
                         Text("$" + "%,.2f".format(toAccount.balance), color = Color.White, fontWeight = FontWeight.Black, fontSize = 20.sp)
                         Spacer(Modifier.height(8.dp))
                         Row {
-                            KButton(text = "Min Payment ($25)", onClick = { amount = "25.00" }, variant = KButtonVariant.Ghost)
+                            KButton(text = "Min Payment ($25)", onClick = { amount = "25.00" }, variant = KButtonVariant.Ghost, testTag = "min_payment_25")
                             Spacer(Modifier.width(8.dp))
-                            KButton(text = "Pay Full Balance", onClick = { amount = toAccount.balance.toString() }, variant = KButtonVariant.Ghost)
+                            KButton(text = "Pay Full Balance", onClick = { amount = toAccount.balance.toString() }, variant = KButtonVariant.Ghost, testTag = "pay_full_balance")
                         }
                     }
                 }
@@ -158,7 +172,7 @@ fun TransferScreen(user: User, onNavigateBack: () -> Unit, onTransfer: suspend (
                 Spacer(Modifier.height(24.dp))
 
                 Row {
-                    KButton(text = "Cancel", onClick = onNavigateBack, variant = KButtonVariant.Ghost, modifier = Modifier.weight(1f))
+                    KButton(text = "Cancel", onClick = onNavigateBack, variant = KButtonVariant.Ghost, modifier = Modifier.weight(1f), testTag = "cancel")
                     Spacer(Modifier.width(12.dp))
                     KButton(
                         text = "Review Protocol",
@@ -173,7 +187,8 @@ fun TransferScreen(user: User, onNavigateBack: () -> Unit, onTransfer: suspend (
                             }
                             if (error.isEmpty()) isConfirming = true
                         },
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
+                        testTag = "review_protocol"
                     )
                 }
             }
