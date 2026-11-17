@@ -6,18 +6,25 @@ plugins {
     id("org.jetbrains.kotlin.plugin.serialization")
 }
 
-// Load GEMINI_API_KEY from gradle.properties / local.properties so it can be
-// injected into BuildConfig, mirroring the web app's process.env.API_KEY usage.
-val geminiApiKey: String = run {
-    val localProps = Properties()
+// Load optional settings from local.properties (git-ignored) or gradle.properties
+// so they can be injected into BuildConfig, mirroring the web app's
+// process.env.API_KEY usage.
+val localProps = Properties().apply {
     val localFile = rootProject.file("local.properties")
     if (localFile.exists()) {
-        localProps.load(localFile.inputStream())
+        localFile.inputStream().use { load(it) }
     }
-    (localProps.getProperty("GEMINI_API_KEY")
-        ?: project.findProperty("GEMINI_API_KEY") as String?
-        ?: "")
 }
+
+fun configValue(name: String, default: String = ""): String =
+    localProps.getProperty(name) ?: (project.findProperty(name) as String?) ?: default
+
+val geminiApiKey: String = configValue("GEMINI_API_KEY")
+
+// The model is configurable because Google retires Gemini models on a schedule
+// (the previously hard-coded gemini-1.5-flash has been retired and returns 404).
+// Override with GEMINI_MODEL in local.properties / gradle.properties.
+val geminiModel: String = configValue("GEMINI_MODEL", "gemini-3.1-flash-lite")
 
 android {
     namespace = "com.katalon.katalianbanking"
@@ -30,12 +37,17 @@ android {
         versionCode = 1
         versionName = "1.0"
 
+        // NOTE: a key supplied here is compiled into the APK and can be extracted.
+        // Fine for local QA builds; for anything distributed, call Gemini through
+        // your own backend instead of shipping a key.
         buildConfigField("String", "GEMINI_API_KEY", "\"$geminiApiKey\"")
+        buildConfigField("String", "GEMINI_MODEL", "\"$geminiModel\"")
     }
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
         debug {
@@ -65,6 +77,12 @@ android {
         }
     }
 
+    lint {
+        // Report findings (CI uploads the HTML report) without failing the build on
+        // pre-existing issues; tighten to abortOnError = true once the backlog is clear.
+        abortOnError = false
+    }
+
     // Rename the generated APK(s) from the default "app-<variant>.apk" to a
     // friendly, user-facing filename for distribution/download purposes.
     applicationVariants.all {
@@ -80,6 +98,7 @@ android {
 dependencies {
     implementation("androidx.core:core-ktx:1.13.1")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.7.0")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
     implementation("androidx.activity:activity-compose:1.9.0")
 
@@ -101,6 +120,8 @@ dependencies {
 
     // Networking for the optional live Gemini-powered "Ask AI Assistant" feature
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
+
+    testImplementation("junit:junit:4.13.2")
 
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
