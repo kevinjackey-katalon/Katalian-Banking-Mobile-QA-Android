@@ -8,7 +8,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Send
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -128,7 +128,7 @@ fun AiAssistantWidget(allUsers: List<User>) {
                             singleLine = true,
                             keyboardOptions = KeyboardOptions(
                                 capitalization = KeyboardCapitalization.Sentences,
-                                autoCorrect = true,
+                                autoCorrectEnabled = true,
                                 keyboardType = KeyboardType.Text,
                                 imeAction = ImeAction.Search
                             ),
@@ -144,7 +144,7 @@ fun AiAssistantWidget(allUsers: List<User>) {
                             enabled = query.isNotBlank() && !isLoading,
                             modifier = Modifier.testTag("ai_assistant_send")
                         ) {
-                            Icon(Icons.Default.Send, contentDescription = "Send", tint = Cyan500)
+                            Icon(Icons.AutoMirrored.Filled.Send, contentDescription = "Send", tint = Cyan500)
                         }
                     }
                 }

@@ -2,8 +2,8 @@ import java.util.Properties
 
 plugins {
     id("com.android.application")
-    id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.serialization")
+    id("org.jetbrains.kotlin.plugin.compose")
 }
 
 // Load optional settings from local.properties (git-ignored) or gradle.properties
@@ -28,12 +28,12 @@ val geminiModel: String = configValue("GEMINI_MODEL", "gemini-3.1-flash-lite")
 
 android {
     namespace = "com.katalon.katalianbanking"
-    compileSdk = 34
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.katalon.katalianbanking"
         minSdk = 24
-        targetSdk = 34
+        targetSdk = 36
         versionCode = 1
         versionName = "1.0"
 
@@ -59,16 +59,10 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-    kotlinOptions {
-        jvmTarget = "17"
-    }
 
     buildFeatures {
         compose = true
         buildConfig = true
-    }
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.11"
     }
 
     packaging {
@@ -82,27 +76,22 @@ android {
         // pre-existing issues; tighten to abortOnError = true once the backlog is clear.
         abortOnError = false
     }
+}
 
-    // Rename the generated APK(s) from the default "app-<variant>.apk" to a
-    // friendly, user-facing filename for distribution/download purposes.
-    applicationVariants.all {
-        val variant = this
-        variant.outputs
-            .map { it as com.android.build.gradle.internal.api.BaseVariantOutputImpl }
-            .forEach { output ->
-                output.outputFileName = "Katalian Banking.apk"
-            }
+kotlin {
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
     }
 }
 
 dependencies {
-    implementation("androidx.core:core-ktx:1.13.1")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
-    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.7.0")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
-    implementation("androidx.activity:activity-compose:1.9.0")
+    implementation("androidx.core:core-ktx:1.19.1")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.11.0")
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.11.0")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.11.0")
+    implementation("androidx.activity:activity-compose:1.13.0")
 
-    val composeBom = platform("androidx.compose:compose-bom:2024.05.00")
+    val composeBom = platform("androidx.compose:compose-bom:2026.08.00")
     implementation(composeBom)
     androidTestImplementation(composeBom)
 
@@ -112,14 +101,14 @@ dependencies {
     implementation("androidx.compose.material:material-icons-extended")
     implementation("androidx.compose.material3:material3")
 
-    implementation("androidx.navigation:navigation-compose:2.7.7")
+    implementation("androidx.navigation:navigation-compose:2.10.0")
 
     // Persistence (mirrors the web app's localStorage-backed session/users store)
-    implementation("androidx.datastore:datastore-preferences:1.1.1")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
+    implementation("androidx.datastore:datastore-preferences:1.2.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.12.0")
 
     // Networking for the optional live Gemini-powered "Ask AI Assistant" feature
-    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("com.squareup.okhttp3:okhttp:5.4.0")
 
     testImplementation("junit:junit:4.13.2")
 

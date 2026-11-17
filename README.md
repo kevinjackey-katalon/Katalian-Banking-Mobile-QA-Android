@@ -40,7 +40,9 @@ customer-facing banking functionality — let us know if you'd like that mirrore
 
 ## Running locally
 
-**Prerequisites:** Android Studio (Koala or newer), JDK 17.
+**Prerequisites:** a current stable Android Studio (the build uses Android Gradle Plugin 9.5, which
+older releases cannot open) and JDK 17 or newer. Gradle 9.6, Kotlin 2.4 and the Android SDK platform
+(API 37) are fetched automatically.
 
 1. Open this project in Android Studio and let Gradle sync (it will fetch the wrapper JAR
    automatically; if not, run `gradle wrapper` once with a local Gradle install).

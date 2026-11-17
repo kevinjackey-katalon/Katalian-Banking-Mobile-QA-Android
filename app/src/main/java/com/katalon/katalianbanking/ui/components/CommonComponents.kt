@@ -6,7 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -122,46 +122,46 @@ internal fun KInputType.accepts(candidate: String, maxLength: Int?): Boolean {
 private fun KInputType.keyboardOptions(imeAction: ImeAction): KeyboardOptions = when (this) {
     KInputType.Password -> KeyboardOptions(
         capitalization = KeyboardCapitalization.None,
-        autoCorrect = false,
+        autoCorrectEnabled = false,
         keyboardType = KeyboardType.Password,
         imeAction = imeAction
     )
     KInputType.Username -> KeyboardOptions(
         capitalization = KeyboardCapitalization.None,
-        autoCorrect = false,
+        autoCorrectEnabled = false,
         keyboardType = KeyboardType.Ascii,
         imeAction = imeAction
     )
     KInputType.Email -> KeyboardOptions(
         capitalization = KeyboardCapitalization.None,
-        autoCorrect = false,
+        autoCorrectEnabled = false,
         keyboardType = KeyboardType.Email,
         imeAction = imeAction
     )
     KInputType.Name, KInputType.Address -> KeyboardOptions(
         capitalization = KeyboardCapitalization.Words,
-        autoCorrect = false,
+        autoCorrectEnabled = false,
         keyboardType = KeyboardType.Text,
         imeAction = imeAction
     )
     KInputType.Decimal -> KeyboardOptions(
-        autoCorrect = false,
+        autoCorrectEnabled = false,
         keyboardType = KeyboardType.Decimal,
         imeAction = imeAction
     )
     KInputType.Digits -> KeyboardOptions(
-        autoCorrect = false,
+        autoCorrectEnabled = false,
         keyboardType = KeyboardType.Number,
         imeAction = imeAction
     )
     KInputType.Date -> KeyboardOptions(
-        autoCorrect = false,
+        autoCorrectEnabled = false,
         keyboardType = KeyboardType.Text,
         imeAction = imeAction
     )
     KInputType.Text, KInputType.Multiline, KInputType.Message -> KeyboardOptions(
         capitalization = KeyboardCapitalization.Sentences,
-        autoCorrect = true,
+        autoCorrectEnabled = true,
         keyboardType = KeyboardType.Text,
         imeAction = imeAction
     )
@@ -310,7 +310,7 @@ fun KTopBar(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 if (onBack != null) {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
                     }
                 }
                 Column {
