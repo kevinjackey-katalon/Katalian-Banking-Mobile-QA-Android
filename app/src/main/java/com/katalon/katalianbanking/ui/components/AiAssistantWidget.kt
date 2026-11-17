@@ -48,7 +48,7 @@ fun AiAssistantWidget(allUsers: List<User>) {
                 onClick = { isOpen = true },
                 containerColor = Cyan500,
                 contentColor = Color.White,
-                modifier = Modifier.align(Alignment.BottomEnd).padding(24.dp)
+                modifier = Modifier.align(Alignment.BottomEnd).padding(24.dp).testTag("ai_assistant_open")
             ) {
                 Icon(Icons.Default.Bolt, contentDescription = null)
                 Spacer(Modifier.width(8.dp))
@@ -74,7 +74,7 @@ fun AiAssistantWidget(allUsers: List<User>) {
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text("Katalian Financial AI", color = Color.White, fontWeight = FontWeight.Black)
-                        IconButton(onClick = { isOpen = false }) {
+                        IconButton(onClick = { isOpen = false }, modifier = Modifier.testTag("ai_assistant_close")) {
                             Icon(Icons.Default.Close, contentDescription = "Close", tint = Color.White)
                         }
                     }
@@ -92,7 +92,7 @@ fun AiAssistantWidget(allUsers: List<User>) {
                                 }
                             }
                             response != null -> {
-                                Text(response.orEmpty(), color = Color.White, fontSize = 13.sp, lineHeight = 18.sp)
+                                Text(response.orEmpty(), color = Color.White, fontSize = 13.sp, lineHeight = 18.sp, modifier = Modifier.testTag("ai_assistant_response"))
                             }
                             else -> {
                                 Text(
