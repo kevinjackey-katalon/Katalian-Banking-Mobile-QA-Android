@@ -27,7 +27,7 @@ fun PasswordResetScreen(onBackToLogin: () -> Unit) {
                 textAlign = TextAlign.Center
             )
             Spacer(Modifier.height(24.dp))
-            KButton(text = "Back to Login", onClick = onBackToLogin, fullWidth = true)
+            KButton(text = "Back to Login", onClick = onBackToLogin, fullWidth = true, testTag = "back_to_login")
         }
     }
 }
