@@ -12,18 +12,19 @@ import java.io.File
  * The approved list lives in src/test/resources/test-tags.txt. If you change a tag ON
  * PURPOSE, update that file in the same commit so the change is visible in review.
  *
- * Tags built at runtime from a variable (for example the "<field>_visibility_toggle"
- * suffix) are derived from the tags listed here and are not scanned.
+ * Tags built at runtime are recorded as templates exactly as written in the source, for
+ * example `account_card_${acc.id}`. Changing the expression inside a template changes the
+ * resulting locators, so it is flagged here too.
  */
 class TestTagContractTest {
 
     // testTag = "a"  |  testTag = if (cond) "a" else "b"  |  testTag = if (c1) "a" else if (c2) "b" else "c"
     private val tagExpression = Regex(
-        """testTag\s*=\s*((?:if\s*\([^)]*\)\s*)?"[^"$]*"(?:\s*else\s*(?:if\s*\([^)]*\)\s*)?"[^"$]*")*)"""
+        """testTag\s*=\s*((?:if\s*\([^)]*\)\s*)?"[^"]*"(?:\s*else\s*(?:if\s*\([^)]*\)\s*)?"[^"]*")*)"""
     )
-    private val modifierTag = Regex("""\.testTag\(\s*"([^"$]*)"\s*\)""")
-    private val dropdownTag = Regex("""kDropdownTrigger\(\s*"([^"$]*)"""")
-    private val stringLiteral = Regex("\"([^\"$]*)\"")
+    private val modifierTag = Regex("""\.testTag\(\s*"([^"]*)"\s*\)""")
+    private val dropdownTag = Regex("""kDropdownTrigger\(\s*"([^"]*)"""")
+    private val stringLiteral = Regex("\"([^\"]*)\"")
 
     private fun sourceRoot(): File =
         listOf("src/main/java", "app/src/main/java").map(::File).firstOrNull { it.isDirectory }
