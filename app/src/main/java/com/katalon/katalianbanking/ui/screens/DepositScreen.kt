@@ -159,7 +159,7 @@ fun DepositScreen(user: User, onNavigateBack: () -> Unit, onDeposit: suspend (St
                                 color = Slate400, fontSize = 13.sp
                             )
                             Spacer(Modifier.height(20.dp))
-                            KButton(text = "Return to Portfolio", onClick = onNavigateBack)
+                            KButton(text = "Return to Portfolio", onClick = onNavigateBack, testTag = "return_to_portfolio")
                         }
                     }
                 }
@@ -169,14 +169,14 @@ fun DepositScreen(user: User, onNavigateBack: () -> Unit, onDeposit: suspend (St
                 Spacer(Modifier.height(24.dp))
                 Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
                     if (step > 1) {
-                        KButton(text = "Back", onClick = { step -= 1 }, variant = KButtonVariant.Secondary)
+                        KButton(text = "Back", onClick = { step -= 1 }, variant = KButtonVariant.Secondary, testTag = "back")
                     } else {
                         Spacer(Modifier.width(1.dp))
                     }
                     val canContinue = amount.toDoubleOrNull()?.let { it > 0 } == true &&
                             !(step == 2 && method == DepositMethod.Check && !(checkFrontCaptured && checkBackCaptured))
                     if (step < 3) {
-                        KButton(text = "Continue", enabled = canContinue, onClick = { step += 1 })
+                        KButton(text = "Continue", enabled = canContinue, onClick = { step += 1 }, testTag = "continue")
                     } else {
                         KButton(text = "Authorize Deposit", onClick = {
                             loading = true
@@ -186,7 +186,9 @@ fun DepositScreen(user: User, onNavigateBack: () -> Unit, onDeposit: suspend (St
                                 loading = false
                                 step = 4
                             }
-                        })
+                        },
+                            testTag = "authorize_deposit"
+                        )
                     }
                 }
             }

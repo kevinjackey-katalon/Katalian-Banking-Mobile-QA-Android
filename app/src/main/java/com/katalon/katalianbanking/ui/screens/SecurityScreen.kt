@@ -111,9 +111,9 @@ fun SecurityScreen(user: User, action: SecurityAction, onCancel: () -> Unit, onC
                         )
                         Spacer(Modifier.height(20.dp))
                         Row {
-                            KButton(text = "Cancel", onClick = onCancel, variant = KButtonVariant.Secondary, modifier = Modifier.weight(1f))
+                            KButton(text = "Cancel", onClick = onCancel, variant = KButtonVariant.Secondary, modifier = Modifier.weight(1f), testTag = "cancel")
                             Spacer(Modifier.width(12.dp))
-                            KButton(text = "Authorize Asset Freeze", onClick = { step = 2 }, enabled = incidentDescription.isNotBlank(), variant = KButtonVariant.Danger, modifier = Modifier.weight(1f))
+                            KButton(text = "Authorize Asset Freeze", onClick = { step = 2 }, enabled = incidentDescription.isNotBlank(), variant = KButtonVariant.Danger, modifier = Modifier.weight(1f), testTag = "authorize_asset_freeze")
                         }
                     }
                     2 -> {
@@ -127,9 +127,9 @@ fun SecurityScreen(user: User, action: SecurityAction, onCancel: () -> Unit, onC
                                     color = Slate400, fontSize = 13.sp
                                 )
                                 Spacer(Modifier.height(20.dp))
-                                KButton(text = "Execute Freeze Protocol", onClick = { confirm() }, variant = KButtonVariant.Danger, fullWidth = true)
+                                KButton(text = "Execute Freeze Protocol", onClick = { confirm() }, variant = KButtonVariant.Danger, fullWidth = true, testTag = "execute_freeze_protocol")
                                 Spacer(Modifier.height(8.dp))
-                                KButton(text = "Back to Selection", onClick = { step = 1 }, variant = KButtonVariant.Ghost, fullWidth = true)
+                                KButton(text = "Back to Selection", onClick = { step = 1 }, variant = KButtonVariant.Ghost, fullWidth = true, testTag = "back_to_selection")
                             }
                         }
                     }
@@ -152,9 +152,9 @@ fun SecurityScreen(user: User, action: SecurityAction, onCancel: () -> Unit, onC
                         Spacer(Modifier.height(20.dp))
                         Row(modifier = Modifier.fillMaxWidth()) {
                             Column(modifier = Modifier.fillMaxWidth()) {
-                                KButton(text = "Authorize Cryo-Freeze", onClick = { confirm() }, fullWidth = true)
+                                KButton(text = "Authorize Cryo-Freeze", onClick = { confirm() }, fullWidth = true, testTag = "authorize_cryo_freeze")
                                 Spacer(Modifier.height(8.dp))
-                                KButton(text = "Cancel Protocol", onClick = onCancel, variant = KButtonVariant.Ghost, fullWidth = true)
+                                KButton(text = "Cancel Protocol", onClick = onCancel, variant = KButtonVariant.Ghost, fullWidth = true, testTag = "cancel_protocol")
                             }
                         }
                     }
@@ -172,9 +172,9 @@ fun SecurityScreen(user: User, action: SecurityAction, onCancel: () -> Unit, onC
                             color = Slate400, fontSize = 13.sp
                         )
                         Spacer(Modifier.height(20.dp))
-                        KButton(text = "Initiate Global Lockdown", onClick = { step = 2 }, variant = KButtonVariant.Danger, fullWidth = true)
+                        KButton(text = "Initiate Global Lockdown", onClick = { step = 2 }, variant = KButtonVariant.Danger, fullWidth = true, testTag = "initiate_global_lockdown")
                         Spacer(Modifier.height(8.dp))
-                        KButton(text = "Abort Procedure", onClick = onCancel, variant = KButtonVariant.Ghost, fullWidth = true)
+                        KButton(text = "Abort Procedure", onClick = onCancel, variant = KButtonVariant.Ghost, fullWidth = true, testTag = "abort_procedure")
                     }
                     2 -> {
                         Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
@@ -184,9 +184,9 @@ fun SecurityScreen(user: User, action: SecurityAction, onCancel: () -> Unit, onC
                                 Text("Final Warning", color = Color.White, fontWeight = FontWeight.Black, fontSize = 20.sp)
                                 Text("Global ledger freeze will commence upon confirmation.", color = Slate500, fontSize = 13.sp)
                                 Spacer(Modifier.height(20.dp))
-                                KButton(text = "CONFIRM GLOBAL FREEZE", onClick = { confirm() }, variant = KButtonVariant.Danger, fullWidth = true)
+                                KButton(text = "CONFIRM GLOBAL FREEZE", onClick = { confirm() }, variant = KButtonVariant.Danger, fullWidth = true, testTag = "confirm_global_freeze")
                                 Spacer(Modifier.height(8.dp))
-                                KButton(text = "Back to Safety", onClick = { step = 1 }, variant = KButtonVariant.Secondary, fullWidth = true)
+                                KButton(text = "Back to Safety", onClick = { step = 1 }, variant = KButtonVariant.Secondary, fullWidth = true, testTag = "back_to_safety")
                             }
                         }
                     }
@@ -216,7 +216,7 @@ private fun SuccessBlock(icon: String, title: String, message: String, onDone: (
             Spacer(Modifier.height(8.dp))
             Text(message, color = Slate400, fontSize = 13.sp)
             Spacer(Modifier.height(20.dp))
-            KButton(text = "Back to Portfolio", onClick = onDone)
+            KButton(text = "Back to Portfolio", onClick = onDone, testTag = "back_to_portfolio")
         }
     }
 }

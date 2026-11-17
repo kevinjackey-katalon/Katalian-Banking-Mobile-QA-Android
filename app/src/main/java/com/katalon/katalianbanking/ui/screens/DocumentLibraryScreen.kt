@@ -117,7 +117,9 @@ fun DocumentLibraryScreen() {
                 } catch (e: Exception) {
                     Toast.makeText(context, "Failed to generate document.", Toast.LENGTH_LONG).show()
                 }
-            }, variant = KButtonVariant.Secondary, fullWidth = true)
+            }, variant = KButtonVariant.Secondary, fullWidth = true,
+                testTag = "download_loan_request_form_pdf"
+            )
         }
     }
 }

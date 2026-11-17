@@ -46,9 +46,9 @@ fun ContactScreen(onReportStolen: () -> Unit, onLockdown: () -> Unit) {
             Text("\u26A0\uFE0F Security Incident", color = Red500, fontWeight = FontWeight.Black, fontSize = 16.sp)
             Text("Immediate actions for compromised accounts or stolen assets.", color = Slate500, fontSize = 12.sp)
             Spacer(Modifier.height(12.dp))
-            KButton(text = "Report Stolen Asset", onClick = onReportStolen, variant = KButtonVariant.Danger, fullWidth = true)
+            KButton(text = "Report Stolen Asset", onClick = onReportStolen, variant = KButtonVariant.Danger, fullWidth = true, testTag = "report_stolen_asset")
             Spacer(Modifier.height(8.dp))
-            KButton(text = "Account Lockdown", onClick = onLockdown, variant = KButtonVariant.Danger, fullWidth = true)
+            KButton(text = "Account Lockdown", onClick = onLockdown, variant = KButtonVariant.Danger, fullWidth = true, testTag = "account_lockdown")
         }
         Spacer(Modifier.height(20.dp))
 

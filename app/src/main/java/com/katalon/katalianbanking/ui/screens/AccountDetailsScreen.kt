@@ -173,7 +173,8 @@ fun AccountDetailsScreen(account: Account) {
                     }
                 },
                 variant = KButtonVariant.Secondary,
-                enabled = !downloading
+                enabled = !downloading,
+                testTag = if (downloading) "provisioning" else "download_statement"
             )
         }
         Spacer(Modifier.height(16.dp))
